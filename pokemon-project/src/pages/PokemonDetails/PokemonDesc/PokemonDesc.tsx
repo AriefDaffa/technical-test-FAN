@@ -15,7 +15,7 @@ const PokemonDesc: FC<PokemonDescProps> = (props) => {
   return (
     <div className="my-4">
       <div className="text-xl font-semibold underline underline-offset-4">
-        Description
+        Descriptions
       </div>
       <div className="grid grid-cols-2 gap-1 mt-4">
         <div>Species</div>

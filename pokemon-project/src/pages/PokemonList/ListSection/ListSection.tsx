@@ -1,6 +1,6 @@
 import { Fragment, useRef, useEffect } from 'react';
 import { motion, useTransform } from 'framer-motion';
-import type { ChangeEvent, FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import type { MotionValue } from 'framer-motion';
 import type {
   FetchNextPageOptions,
@@ -10,28 +10,32 @@ import type {
 import { useIntersection } from '@mantine/hooks';
 
 import List from '@/components/List';
-import Searchbar from '@/components/Searchbar';
 import ListSkeleton from '@/components/ListSkeleton';
 import type {
   PokemonResults,
   AllPokemonTypes,
 } from '@/repository/getAllPokemon/types';
 import type { SearchResultTypes } from '@/pages/PokemonList/types';
-import SearchResult from './SearchResult/SearchResult';
+
+import SearchResult from './SearchResult';
 
 interface ListSectionProps {
   isLoading: boolean;
   isFetchingNext: boolean;
   isSearching: boolean;
+  isNormalLoading: boolean;
+  isInfiniteScroll: boolean;
   keyword: string;
+  currentNormalPage: number;
   searchResult: SearchResultTypes;
+  filterComponent: ReactNode;
   scrollYProgress: MotionValue<number>;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   fetchNext: (
     options?: FetchNextPageOptions | undefined
   ) => Promise<InfiniteQueryObserverResult<AllPokemonTypes, unknown>>;
   hasNextPage?: boolean;
-  pokemonList?: PokemonResults[];
+  normalData?: PokemonResults[];
+  infiniteScrollData?: PokemonResults[];
 }
 
 const ListSection: FC<ListSectionProps> = (props) => {
@@ -39,13 +43,17 @@ const ListSection: FC<ListSectionProps> = (props) => {
     scrollYProgress,
     isFetchingNext,
     isSearching,
-    pokemonList,
+    infiniteScrollData,
+    isInfiniteScroll,
+    normalData,
     // isLoading,
+    currentNormalPage,
     fetchNext,
     hasNextPage,
     searchResult,
     keyword,
-    onChange,
+    filterComponent,
+    isNormalLoading,
   } = props;
 
   const containerRef = useRef();
@@ -68,19 +76,34 @@ const ListSection: FC<ListSectionProps> = (props) => {
   return (
     <motion.div
       style={{ opacity, display }}
-      className=" max-w-screen-lg fixed bottom-0 left-0 right-0 mx-auto flex flex-col text-white z-50 px-4 h-screen py-5 "
+      className=" max-w-screen-lg fixed bottom-0 left-0 right-0 mx-auto flex flex-col text-white z-50 px-4 h-screen py-5 font-pokemonGb"
     >
       <div className="text-xl mb-4 text-center">Find your Pokemon below!</div>
-      <Searchbar keyword={keyword} handleKeywordChange={onChange} />
-      <div className="px-1 mt-4 font-pokemonGb overflow-y-auto overflow-x-hidden">
+      {filterComponent}
+      <div className="px-1 mt-4 overflow-y-auto overflow-x-hidden">
         {keyword === '' ? (
           <Fragment>
-            {pokemonList?.map((item, idx) => (
-              <div key={idx} ref={ref}>
-                <List index={idx} name={item.name} />
-              </div>
-            ))}
-            {isFetchingNext && <ListSkeleton />}
+            {!isInfiniteScroll ? (
+              <Fragment>
+                {normalData?.map((item, idx) => (
+                  <List
+                    key={`${item.url + idx}`}
+                    index={currentNormalPage * 20 + idx}
+                    name={item.name}
+                  />
+                ))}
+                {isNormalLoading && <ListSkeleton />}
+              </Fragment>
+            ) : (
+              <Fragment>
+                {infiniteScrollData?.map((item, idx) => (
+                  <div key={idx} ref={ref}>
+                    <List index={idx} name={item.name} />
+                  </div>
+                ))}
+                {isFetchingNext && <ListSkeleton />}
+              </Fragment>
+            )}
           </Fragment>
         ) : (
           <SearchResult
@@ -90,6 +113,7 @@ const ListSection: FC<ListSectionProps> = (props) => {
           />
         )}
       </div>
+      <div className="h-64 md:h-36"></div>
     </motion.div>
   );
 };

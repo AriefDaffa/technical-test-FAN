@@ -44,7 +44,7 @@ const List: FC<ListProps> = (props) => {
             {name}
           </div>
           <div className="flex flex-row">
-            <TbPokeball size={26} className="self-center" />
+            <TbPokeball size={26} className="self-center hidden md:block" />
           </div>
         </div>
       </div>

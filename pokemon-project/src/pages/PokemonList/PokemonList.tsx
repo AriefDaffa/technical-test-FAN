@@ -6,6 +6,9 @@ import { useDebouncedState } from '@mantine/hooks';
 
 import getAllPokemon from '@/repository/getAllPokemon';
 import getPokemonByKeyword from '@/repository/getPokemonByKeyword';
+import Searchbar from '@/components/Searchbar';
+import Pagination from '@/components/Pagination';
+import PaginationToggle from '@/components/PaginationToggle';
 import { useInfiniteQuery, useQuery } from 'react-query';
 import type { AllPokemonTypes } from '@/repository/getAllPokemon/types';
 
@@ -16,6 +19,8 @@ import type { SearchResultTypes } from './types';
 
 const PokemonList = () => {
   const ref = useRef(null);
+  const [page, setPage] = useState(0);
+  const [isInfiniteScroll, setIsInfiniteScroll] = useState(true);
 
   const [result, setResult] = useState<SearchResultTypes>({
     index: 0,
@@ -29,17 +34,36 @@ const PokemonList = () => {
     offset: ['start', 'end'],
   });
 
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteQuery<AllPokemonTypes>(['pokemon'], getAllPokemon, {
-      getNextPageParam: (lastPage, page) => {
-        if (!lastPage.next) {
-          return undefined;
-        }
-        return page.length;
-      },
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    });
+  // infinite scrolling
+  const {
+    data: infiniteData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery<AllPokemonTypes>(['pokemon'], getAllPokemon, {
+    getNextPageParam: (lastPage, page) => {
+      if (!lastPage.next) {
+        return undefined;
+      }
+      return page.length;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    enabled: isInfiniteScroll,
+  });
+
+  // normal pagination
+  const { data: normalData, isFetching: normalLoading } =
+    useQuery<AllPokemonTypes>(
+      ['pokemon', page],
+      () => getAllPokemon({ pageParam: page }),
+      {
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        enabled: !isInfiniteScroll,
+      }
+    );
 
   const { isFetching: isSearching } = useQuery(
     ['pokemon', keyword],
@@ -70,6 +94,22 @@ const PokemonList = () => {
     setKeyword(e.currentTarget.value);
   };
 
+  const handleEnableInfinite = () => {
+    setIsInfiniteScroll(true);
+  };
+
+  const handleDisableInfinite = () => {
+    setIsInfiniteScroll(false);
+  };
+
+  const nextPage = () => {
+    setPage(page + 1);
+  };
+
+  const prevPage = () => {
+    setPage(page - 1);
+  };
+
   return (
     <div ref={ref} className="relative">
       <HeroSection scrollYProgress={scrollYProgress} />
@@ -86,11 +126,43 @@ const PokemonList = () => {
           fetchNext={fetchNextPage}
           searchResult={result}
           keyword={keyword}
-          onChange={handleKeywordChange}
           isSearching={isSearching}
-          pokemonList={data?.pages.flatMap((page) => page.results)}
+          isInfiniteScroll={isInfiniteScroll}
+          currentNormalPage={page}
+          isNormalLoading={normalLoading}
+          infiniteScrollData={infiniteData?.pages?.flatMap(
+            (page) => page.results
+          )}
+          normalData={normalData?.results}
+          filterComponent={
+            <>
+              <Searchbar
+                keyword={keyword}
+                handleKeywordChange={handleKeywordChange}
+              />
+              {keyword === '' && (
+                <PaginationToggle
+                  isInfiniteScroll={isInfiniteScroll}
+                  handleEnableInfinite={handleEnableInfinite}
+                  handleDisableInfinite={handleDisableInfinite}
+                />
+              )}
+            </>
+          }
         />
       </div>
+      {!isInfiniteScroll && (
+        <div className=" max-w-screen-lg right-0 left-0 mx-auto font-pokemonGb text-white">
+          <Pagination
+            currentPage={page}
+            nextPage={nextPage}
+            prevPage={prevPage}
+            totalData={normalData?.count}
+            isFirstPage={normalData?.previous === null}
+            isLastPage={normalData?.next === null}
+          />
+        </div>
+      )}
     </div>
   );
 };

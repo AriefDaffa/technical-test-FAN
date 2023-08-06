@@ -37,7 +37,7 @@ const StatSection: FC<StatSectionProps> = (props) => {
   return (
     <div>
       <div className="text-xl font-semibold underline underline-offset-4">
-        Stat
+        Stats
       </div>
       <div className="flex flex-col gap-2 mt-4">
         {data.stats.map((item, idx) => (

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { FC } from 'react';
 
 import pokemonTypesColor from '@/utils/pokemon-types-color';
@@ -10,6 +11,22 @@ interface SpriteSectionProps {
 
 const SpriteSection: FC<SpriteSectionProps> = (props) => {
   const { data } = props;
+
+  const imageURL = useMemo(() => {
+    let url = '';
+
+    if (!data.sprites.front_default || data.sprites.front_default === '') {
+      if (!data.sprites.front_shiny || data.sprites.front_shiny === '') {
+        url = 'assets/image/no-image.png';
+      } else {
+        url = data.sprites.front_shiny;
+      }
+    } else {
+      url = data.sprites.front_default;
+    }
+
+    return url;
+  }, [data.sprites.front_default, data.sprites.front_shiny]);
 
   return (
     <div className="">
@@ -38,7 +55,7 @@ const SpriteSection: FC<SpriteSectionProps> = (props) => {
           )} rounded-full absolute w-2/3 h-2/3 top-0 bottom-0 my-auto blur-3xl`}
         />
         <img
-          src={data.sprites.front_default}
+          src={imageURL}
           alt=""
           className="w-full object-cover drop-shadow-xl"
         />
