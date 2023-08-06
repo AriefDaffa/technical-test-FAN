@@ -1,7 +1,7 @@
-## Logic Test
+## 1. Logic Test
 Logic test answer can be checked on `logic-test` folder
 
-## POKEDEX Project
+## 2. POKEDEX Project
 ![image](https://github.com/AriefDaffa/technical-test-FAN/assets/57257058/b172654f-a391-4399-88e1-8ed7461d4ab6)
 
 ### What is pokedex?
