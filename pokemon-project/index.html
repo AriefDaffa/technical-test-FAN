@@ -4,10 +4,57 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        height: 100%;
+        animation-name: spin;
+        animation-duration: 5000ms;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+      }
+
+      .loader {
+        display: flex;
+        align-items: center;
+        align-self: center;
+      }
+
+      .loader--hide {
+        display: none;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     <title>POKEDEX</title>
   </head>
   <body>
     <div id="root"></div>
+    <div class="loader-container">
+      <div class="loader">
+        <img
+          src="/assets/image/pokeball.png"
+          alt=""
+          style="height: 100px; object-fit: cover"
+        />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
